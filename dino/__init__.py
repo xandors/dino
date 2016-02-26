@@ -9,6 +9,7 @@ Dino Dependency Injection for Python
 :licence: MIT, see LICENCE for more details
 """
 from __future__ import absolute_import, unicode_literals
+from pkgutil import extend_path
 import logging
 
 # Generate your own AsciiArt at:
@@ -33,3 +34,5 @@ __copyright__ = 'Copyright 2016 Alexandre Souza'
 
 # the user should dictate what happens when a logging event occurs
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+__path__ = extend_path(__path__, __name__)
