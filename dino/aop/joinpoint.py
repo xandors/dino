@@ -95,8 +95,6 @@ def base_ctx(ctx):
     :param ctx: initial ctx.
     :return: base ctx.
     """
-    result = None
-
     if isclass(ctx):
         result = getattr(ctx, '__base__', None)
         if result is None:
@@ -126,6 +124,7 @@ def super_method(name, ctx):
     else:
         _ctx = ctx.__class__
         first_mro = 0
+
     # get class hierarchy
     mro = getmro(_ctx)
     for cls in mro[first_mro:]:
