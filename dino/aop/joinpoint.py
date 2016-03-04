@@ -24,27 +24,27 @@ functions allow to weave an interception function on any python callable object.
 
 from __future__ import absolute_import
 
+from inspect import getargspec
+from inspect import getfile
+from inspect import getmembers
+from inspect import getmodule
+from inspect import getmro
 from inspect import isbuiltin
-from inspect import ismethod
 from inspect import isclass
 from inspect import isfunction
-from inspect import getmodule
-from inspect import getmembers
-from inspect import getfile
-from inspect import getargspec
+from inspect import ismethod
 from inspect import isroutine
-from inspect import getmro
-
 from opcode import opmap
-
-from six import PY3, PY2, wraps
-from six.moves import builtins
-
-from types import MethodType, FunctionType
-
 from time import time
+from types import FunctionType
+from types import MethodType
 
-__all__ = [
+from six.moves import builtins
+from six import PY2
+from six import PY3
+from six import wraps
+
+__all__ = (
     'Joinpoint',
     'JoinpointError',
     'get_intercepted',
@@ -52,7 +52,7 @@ __all__ = [
     'super_method',
     'find_ctx',
     'base_ctx'
-]
+)
 
 # consts for interception loading
 LOAD_GLOBAL = opmap['LOAD_GLOBAL']
@@ -72,8 +72,8 @@ WRAPPER_UPDATES = ['__dict__']
 
 
 def find_ctx(elt):
-    """
-    Find a Pointcut ctx which is a class/instance related to input function/method.
+    """Find a Pointcut ctx which is a class/instance related to input function/method.
+
     :param elt: elt from where find a ctx.
     :return: elt ctx. None if no ctx available or if elt is a None method.
     """
@@ -90,8 +90,8 @@ def find_ctx(elt):
 
 
 def base_ctx(ctx):
-    """
-    Get base ctx.
+    """Get base ctx.
+
     :param ctx: initial ctx.
     :return: base ctx.
     """
@@ -108,8 +108,8 @@ def base_ctx(ctx):
 
 
 def super_method(name, ctx):
-    """
-    Get super ctx method and ctx where name matches with input name.
+    """Get super ctx method and ctx where name matches with input name.
+
     :param name: method name to find in super ctx.
     :param ctx: initial method ctx.
     :return: method in super ctx and super ctx.
@@ -136,14 +136,12 @@ def super_method(name, ctx):
 
 
 class JoinpointError(Exception):
-    """
-    Handle Joinpoint errors.
-    """
+    """Handle Joinpoint errors."""
 
 
 class Joinpoint(object):
-    """
-    Manage joinpoint execution with Advices.
+    """Manage joinpoint execution with Advices.
+
     Advices are callable objects which take in parameter a Joinpoint.
     Joinpoint provides to advices:
         - the joinpoint,
@@ -185,10 +183,9 @@ class Joinpoint(object):
     )
 
     def __init__(self, target=None, args=None, kwargs=None, advices=None, ctx=None, exec_ctx=None):
-        """
-        Initialize a new Joinpoint with optional parameters such as a target, its calling arguments (args and kwargs)
-        and a list of advices (callable which take self in parameter).
+        """Initialize a new Joinpoint with optional parameters such as a target.
 
+        Its calling arguments (args and kwargs) and a list of advices (callable which take self in parameter).
         If target, args and kwargs are not None, self Joinpoint use them in a static context. Otherwise, they will be
         resolved at proceeding time.
 
@@ -223,6 +220,7 @@ class Joinpoint(object):
         self.set_target(target=target, ctx=ctx)
 
     def __repr__(self):
+        """Set repr return."""
         self_type = type(self)
         result = "{0}(".format(self_type.__name__)
 
@@ -236,8 +234,8 @@ class Joinpoint(object):
         return result
 
     def set_target(self, target, ctx=None):
-        """
-        Set target.
+        """Set target.
+
         :param target: new target to use.
         :param target ctx: target ctx if target is an class/instance attribute.
         """
@@ -253,8 +251,9 @@ class Joinpoint(object):
                 self.apply_pointcut(target, ctx=ctx)
 
     def start(self, target=None, args=None, kwargs=None, advices=None, exec_ctx=None, ctx=None):
-        """
-        Start to proceed this Joinpoint in initializing target, its arguments and advices. Call self.proceed at the end.
+        """Start to proceed this Joinpoint in initializing target, its arguments and advices.
+
+         Call self.proceed at the end.
         :param callable target: new target to use in proceeding. self.target by default.
         :param tuple args: new target args to use in proceeding. self.args by default.
         :param dict kwargs: new target kwargs to use in proceeding. self.kwargs by default.
@@ -293,7 +292,8 @@ class Joinpoint(object):
         return result
 
     def proceed(self):
-        """
+        """Proceed this Joinpoint.
+
         Proceed this Joinpoint in calling all advices with this joinpoint as the only one parameter, and call at the end
         of the target.
         :return:
@@ -311,8 +311,7 @@ class Joinpoint(object):
         return result
 
     def apply_pointcut(self, target, function=None, ctx=None):
-        """
-        Apply pointcut on input target and returns final interception.
+        """Apply pointcut on input target and returns final interception.
 
         The poincut respects all meta properties such as:
             - function signature,
@@ -540,13 +539,10 @@ class Joinpoint(object):
 
         :param target: target from where getting advices.
         """
-
         raise NotImplementedError()
 
 
-def _apply_interception(
-        target, interception_fn, ctx=None, _globals=None
-):
+def _apply_interception(target, interception_fn, ctx=None, _globals=None):
     """Apply interception on input target and return the final target.
 
     :param Callable target: target on applying the interception_fn.
@@ -563,7 +559,6 @@ def _apply_interception(
     :rtype: tuple(callable, function, ctx)
     :raises: TypeError if target is not a routine.
     """
-
     if not callable(target):
         raise TypeError('target {0} is not callable.'.format(target))
 
@@ -654,7 +649,6 @@ def _unapply_interception(target, ctx=None):
         function. is_joinpoint(target) must be True.
     :param ctx: target ctx.
     """
-
     # try to get the right ctx
     if ctx is None:
         ctx = find_ctx(elt=target)
@@ -766,7 +760,6 @@ def is_intercepted(target):
     :return: True iif input target is intercepted.
     :rtype: bool
     """
-
     result = False
 
     # get interception function from input target
@@ -787,7 +780,6 @@ def get_intercepted(target):
         (fn, None) if not ctx exists.
     :rtype: tuple
     """
-
     function = _get_function(target)
 
     intercepted = getattr(function, _INTERCEPTED, None)
@@ -811,7 +803,6 @@ def _get_function(target):
     :raises: TypeError if target is not callable or is a class without a
         constructor.
     """
-
     result = None
 
     # raise TypeError if target is not callable
